@@ -34,3 +34,43 @@ DISTRIBUTED_STORAGE_PREFERENCE:
     - s3Storage
 
 ```
+7. Create the secret in the namespace where your operator is deployed.
+```bash
+oc create secret generic --from-file config.yaml=./config.yaml config-bundle-secret -n openshift-operators
+```
+8. Now create the registry instance and specify the `config-bundle-secret` in registry.
+    
+9.   While creating the registry instance in quay operator, set Objectstorage `managed` to `false` as we have manually specified the storage in config.yaml and we are managing it. Below is an example of how `yaml` should look like.
+   
+```bash
+apiVersion: quay.redhat.com/v1
+kind: QuayRegistry
+metadata:
+  name: example-registry
+  namespace: quay-enterprise
+  spec:
+    configBundleSecret: config-bundle-secret
+    components:
+    - kind: quay
+      managed: true
+    - kind: postgres
+      managed: true
+    - kind: clair
+      managed: true
+    - kind: redis
+      managed: true
+    - kind: horizontalpodautoscaler
+      managed: true
+    - kind: objectstorage
+      managed: false           >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>> Here
+    - kind: route
+      managed: true
+    - kind: mirror
+      managed: true
+    - kind: monitoring
+      managed: true
+    - kind: tls
+      managed: true
+    - kind: clairpostgres
+      managed: true
+```
